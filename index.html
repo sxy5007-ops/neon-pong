@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Neon Pong</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="game-wrapper">
+    <canvas id="game-canvas"></canvas>
+
+    <div id="crt-overlay">
+      <div class="scanlines"></div>
+      <div class="vignette"></div>
+    </div>
+
+    <div id="menu-screen" class="screen active">
+      <div class="menu-container glass">
+        <h1 class="neon-title">NEON PONG</h1>
+        <div class="menu-buttons">
+          <button class="neon-btn" data-mode="ai" data-difficulty="easy">
+            <span class="btn-label">1 PLAYER</span>
+            <span class="btn-sub">EASY</span>
+          </button>
+          <button class="neon-btn" data-mode="ai" data-difficulty="normal">
+            <span class="btn-label">1 PLAYER</span>
+            <span class="btn-sub">NORMAL</span>
+          </button>
+          <button class="neon-btn" data-mode="ai" data-difficulty="hard">
+            <span class="btn-label">1 PLAYER</span>
+            <span class="btn-sub">HARD</span>
+          </button>
+          <button class="neon-btn" data-mode="2p">
+            <span class="btn-label">2 PLAYERS</span>
+            <span class="btn-sub">LOCAL</span>
+          </button>
+        </div>
+        <div class="menu-footer">
+          <button id="mute-btn" class="icon-btn" title="Toggle Audio">🔊</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="hud" class="screen">
+      <div class="score-board">
+        <div class="score" id="score-p1">0</div>
+        <div class="score-divider">|</div>
+        <div class="score" id="score-p2">0</div>
+      </div>
+      <div class="hud-info">
+        <span id="mode-label">VS AI</span>
+        <button id="hud-mute-btn" class="icon-btn">🔊</button>
+        <button id="pause-btn" class="icon-btn">⏸</button>
+      </div>
+    </div>
+
+    <div id="pause-screen" class="screen">
+      <div class="menu-container glass">
+        <h2 class="neon-title small">PAUSED</h2>
+        <div class="menu-buttons">
+          <button id="resume-btn" class="neon-btn">RESUME</button>
+          <button id="quit-btn" class="neon-btn">QUIT TO MENU</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="gameover-screen" class="screen">
+      <div class="menu-container glass">
+        <h2 class="neon-title small" id="winner-text">PLAYER 1 WINS</h2>
+        <div class="final-score">
+          <span id="final-p1">0</span> — <span id="final-p2">0</span>
+        </div>
+        <div class="menu-buttons">
+          <button id="restart-btn" class="neon-btn">PLAY AGAIN</button>
+          <button id="menu-btn" class="neon-btn">MAIN MENU</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="touch-zones">
+      <div id="touch-left" class="touch-zone"></div>
+      <div id="touch-right" class="touch-zone"></div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
