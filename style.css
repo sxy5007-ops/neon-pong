@@ -192,6 +192,40 @@ html, body {
   margin-top: 18px;
 }
 
+.save-panel {
+  margin-top: 22px;
+  padding: 12px 14px;
+  border: 1px solid rgba(0, 255, 255, 0.18);
+  border-radius: 8px;
+  background: rgba(0, 255, 255, 0.05);
+  text-align: left;
+}
+
+.save-panel.compact {
+  margin: 0 0 24px;
+}
+
+.save-stats {
+  color: rgba(0, 255, 255, 0.78);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-shadow: 0 0 6px rgba(0, 255, 255, 0.2);
+}
+
+.leaderboard-list {
+  margin-top: 8px;
+  padding-left: 24px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.76rem;
+  line-height: 1.5;
+}
+
+.leaderboard-list li::marker {
+  color: #ff00ff;
+  font-weight: 800;
+}
+
 .control-row {
   display: flex;
   align-items: center;

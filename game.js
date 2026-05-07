@@ -37,6 +37,10 @@
     touchRight: document.getElementById('touch-right'),
     controlsHint: document.getElementById('controls-hint'),
     hintP2: document.getElementById('hint-p2'),
+    saveStats: document.getElementById('save-stats'),
+    leaderboardList: document.getElementById('leaderboard-list'),
+    gameoverSaveStats: document.getElementById('gameover-save-stats'),
+    gameoverLeaderboard: document.getElementById('gameover-leaderboard'),
   };
 
   /* ============================================================
@@ -61,9 +65,18 @@
   };
 
   const DIFFICULTY = {
-    easy:   { reaction: 0.28, maxSpeedPct: 0.55, error: 0.18 },
-    normal: { reaction: 0.16, maxSpeedPct: 0.78, error: 0.08 },
-    hard:   { reaction: 0.08, maxSpeedPct: 0.98, error: 0.02 },
+    easy:   { reaction: 0.22, maxSpeedPct: 0.7, error: 0.18 },
+    normal: { reaction: 0.12, maxSpeedPct: 0.95, error: 0.08 },
+    hard:   { reaction: 0.06, maxSpeedPct: 1.15, error: 0.02 },
+  };
+
+  const SAVE_KEY = 'neon-pong-save-v1';
+  const DEFAULT_SAVE = {
+    gamesPlayed: 0,
+    p1Wins: 0,
+    aiWins: 0,
+    p2Wins: 0,
+    leaderboard: [],
   };
 
   /* ============================================================
@@ -88,12 +101,95 @@
   let particles = [];
   let trails = [];
   let scores = { p1: 0, p2: 0 };
+  let saveData = loadSave();
 
   let input = {
     w: false, s: false,
     up: false, down: false,
     p1TouchY: null, p2TouchY: null,
   };
+
+  /* ============================================================
+     Save Data & Leaderboards
+     ============================================================ */
+  function loadSave() {
+    try {
+      const raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) return { ...DEFAULT_SAVE };
+      const parsed = JSON.parse(raw);
+      return {
+        ...DEFAULT_SAVE,
+        ...parsed,
+        leaderboard: Array.isArray(parsed.leaderboard) ? parsed.leaderboard : [],
+      };
+    } catch (err) {
+      return { ...DEFAULT_SAVE };
+    }
+  }
+
+  function saveGameData() {
+    try {
+      localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
+    } catch (err) {
+      // localStorage can fail in private browsing; gameplay should continue.
+    }
+  }
+
+  function formatMode(entry) {
+    return entry.mode === 'ai' ? 'AI ' + entry.difficulty.toUpperCase() : '2P LOCAL';
+  }
+
+  function renderLeaderboard(target) {
+    if (!target) return;
+    target.innerHTML = '';
+    const entries = saveData.leaderboard.slice(0, 5);
+    if (!entries.length) {
+      const li = document.createElement('li');
+      li.textContent = 'No saved wins yet';
+      target.appendChild(li);
+      return;
+    }
+    entries.forEach((entry) => {
+      const li = document.createElement('li');
+      li.textContent = entry.winner + ' ' + entry.score + ' - ' + formatMode(entry);
+      target.appendChild(li);
+    });
+  }
+
+  function updateSaveUI() {
+    const record = saveData.p1Wins + '-' + (saveData.aiWins + saveData.p2Wins);
+    const stats = 'Save file: ' + saveData.gamesPlayed + ' games | P1 record ' + record;
+    if (ui.saveStats) ui.saveStats.textContent = stats;
+    if (ui.gameoverSaveStats) ui.gameoverSaveStats.textContent = stats;
+    renderLeaderboard(ui.leaderboardList);
+    renderLeaderboard(ui.gameoverLeaderboard);
+  }
+
+  function recordGameResult(winner) {
+    const winnerName = winner === 'p1' ? 'P1' : (state.mode === 'ai' ? 'AI' : 'P2');
+    const entry = {
+      winner: winnerName,
+      score: scores.p1 + '-' + scores.p2,
+      mode: state.mode,
+      difficulty: state.difficulty,
+      margin: Math.abs(scores.p1 - scores.p2),
+      at: Date.now(),
+    };
+
+    saveData.gamesPlayed++;
+    if (winner === 'p1') saveData.p1Wins++;
+    else if (state.mode === 'ai') saveData.aiWins++;
+    else saveData.p2Wins++;
+
+    saveData.leaderboard.push(entry);
+    saveData.leaderboard.sort((a, b) => {
+      if (b.margin !== a.margin) return b.margin - a.margin;
+      return b.at - a.at;
+    });
+    saveData.leaderboard = saveData.leaderboard.slice(0, 5);
+    saveGameData();
+    updateSaveUI();
+  }
 
   /* ============================================================
      Audio Engine — Procedural Synthwave + SFX
@@ -253,7 +349,7 @@
       w: PADDLE_WIDTH,
       h,
       vy: 0,
-    speed: 720,
+      speed: 720,
       color: side === 'left' ? COLORS.paddleP1 : COLORS.paddleP2,
       glow: side === 'left' ? '#00ffff' : '#ff00ff',
     };
@@ -423,10 +519,12 @@
     applyShake();
     drawGrid();
     drawCenterLine();
-    drawTrails();
-    drawPaddle(paddles.p1);
-    drawPaddle(paddles.p2);
-    drawBall();
+    if (paddles.p1 && paddles.p2 && ball) {
+      drawTrails();
+      drawPaddle(paddles.p1);
+      drawPaddle(paddles.p2);
+      drawBall();
+    }
     drawParticles();
     ctx.restore();
   }
@@ -539,7 +637,7 @@
     const desiredY = targetY + error;
     const diffY = desiredY - p.y;
     const maxSpeed = p.speed * diff.maxSpeedPct;
-    const step = diffY / (diff.reaction * 8);
+    const step = diffY / diff.reaction;
     p.vy = clamp(step, -maxSpeed, maxSpeed);
   }
 
@@ -548,17 +646,14 @@
     const p2 = paddles.p2;
 
     // P1 keyboard
-    let p1Target = null;
-    if (input.w && !input.s) p1Target = p1.y - p1.speed * dt * 2;
-    else if (input.s && !input.w) p1Target = p1.y + p1.speed * dt * 2;
+    const p1KeyboardActive = input.w !== input.s;
+    const p2KeyboardActive = input.up !== input.down;
 
-    // P1 mouse / touch override
-    if (input.p1TouchY !== null) {
+    if (p1KeyboardActive) {
+      p1.vy = input.w ? -p1.speed : p1.speed;
+    } else if (input.p1TouchY !== null) {
       const target = input.p1TouchY - p1.h / 2;
       p1.vy = (target - p1.y) * 6;
-      p1.vy = clamp(p1.vy, -p1.speed, p1.speed);
-    } else if (p1Target !== null) {
-      p1.vy = (p1Target - p1.y) / dt;
       p1.vy = clamp(p1.vy, -p1.speed, p1.speed);
     } else {
       p1.vy *= 0.85;
@@ -567,16 +662,11 @@
 
     // P2 keyboard (2P mode)
     if (state.mode === '2p') {
-      let p2Target = null;
-      if (input.up && !input.down) p2Target = p2.y - p2.speed * dt * 2;
-      else if (input.down && !input.up) p2Target = p2.y + p2.speed * dt * 2;
-
-      if (input.p2TouchY !== null) {
+      if (p2KeyboardActive) {
+        p2.vy = input.up ? -p2.speed : p2.speed;
+      } else if (input.p2TouchY !== null) {
         const target = input.p2TouchY - p2.h / 2;
         p2.vy = (target - p2.y) * 6;
-        p2.vy = clamp(p2.vy, -p2.speed, p2.speed);
-      } else if (p2Target !== null) {
-        p2.vy = (p2Target - p2.y) / dt;
         p2.vy = clamp(p2.vy, -p2.speed, p2.speed);
       } else {
         p2.vy *= 0.85;
@@ -587,13 +677,15 @@
 
   function checkWin() {
     if (scores.p1 >= state.scoreLimit || scores.p2 >= state.scoreLimit) {
+      const winnerKey = scores.p1 >= state.scoreLimit ? 'p1' : 'p2';
       state.screen = 'gameover';
       AudioEngine.sfxWin();
       showScreen('gameover');
-      const winner = scores.p1 >= state.scoreLimit ? 'PLAYER 1' : (state.mode === 'ai' ? 'AI' : 'PLAYER 2');
+      const winner = winnerKey === 'p1' ? 'PLAYER 1' : (state.mode === 'ai' ? 'AI' : 'PLAYER 2');
       ui.winnerText.textContent = winner + ' WINS';
       ui.finalP1.textContent = scores.p1;
       ui.finalP2.textContent = scores.p2;
+      recordGameResult(winnerKey);
     }
   }
 
@@ -647,6 +739,11 @@
     ball = makeBall();
     trails = [];
     particles = [];
+    input = {
+      w: false, s: false,
+      up: false, down: false,
+      p1TouchY: null, p2TouchY: null,
+    };
     ui.controlsHint.classList.remove('hidden');
     ui.hintP2.style.display = mode === 'ai' ? 'none' : 'flex';
     showScreen('hud');
@@ -685,11 +782,31 @@
 
   window.addEventListener('keydown', (e) => {
     const k = e.key.toLowerCase();
-    if (k === 'w' || k === 'arrowup') {
-      if (state.screen === 'playing') { input.w = true; input.up = true; }
+    if (k === 'w') {
+      if (state.screen === 'playing') {
+        input.w = true;
+        input.p1TouchY = null;
+      }
     }
-    if (k === 's' || k === 'arrowdown') {
-      if (state.screen === 'playing') { input.s = true; input.down = true; }
+    if (k === 's') {
+      if (state.screen === 'playing') {
+        input.s = true;
+        input.p1TouchY = null;
+      }
+    }
+    if (k === 'arrowup') {
+      if (state.screen === 'playing') {
+        input.up = true;
+        input.p2TouchY = null;
+      }
+      e.preventDefault();
+    }
+    if (k === 'arrowdown') {
+      if (state.screen === 'playing') {
+        input.down = true;
+        input.p2TouchY = null;
+      }
+      e.preventDefault();
     }
     if (k === 'p' || k === 'escape') {
       if (state.screen === 'playing') pauseGame();
@@ -699,8 +816,10 @@
 
   window.addEventListener('keyup', (e) => {
     const k = e.key.toLowerCase();
-    if (k === 'w' || k === 'arrowup') { input.w = false; input.up = false; }
-    if (k === 's' || k === 'arrowdown') { input.s = false; input.down = false; }
+    if (k === 'w') input.w = false;
+    if (k === 's') input.s = false;
+    if (k === 'arrowup') { input.up = false; e.preventDefault(); }
+    if (k === 'arrowdown') { input.down = false; e.preventDefault(); }
   });
 
   // Mouse control for P1
@@ -747,5 +866,6 @@
      Init
      ============================================================ */
   resize();
+  updateSaveUI();
   requestAnimationFrame(loop);
 })();
