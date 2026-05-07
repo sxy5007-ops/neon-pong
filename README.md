@@ -10,6 +10,7 @@ A modernized, cyberpunk-themed Pong game that runs entirely in the browser. Buil
 - **Procedural Synthwave Music** — background music generated in real-time using the Web Audio API (oscillators, filters, arpeggios)
 - **Synthesized SFX** — paddle hits, wall bounces, scores, and win jingles all generated procedurally
 - **Smart AI Opponent** — three difficulty levels (Easy / Normal / Hard) with human-like reaction delay and prediction error
+- **Chaotic Power-Ups** — frequent drifting pickups with warning pulses, collection callouts, paddle buffs, opponent debuffs, shields, glitch bounces, turbo ball, and multiball bursts
 - **1P vs AI & 2P Local Modes** — challenge the AI or play head-to-head on the same keyboard / device
 - **Responsive Controls** — keyboard (W/S, Arrow keys), mouse tracking, and touch (mobile-friendly split-screen zones)
 - **Glassmorphic UI** — neon menus, pause overlay, game over screen

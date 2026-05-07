@@ -403,6 +403,36 @@ html, body {
   pointer-events: auto;
 }
 
+.effect-strip {
+  position: absolute;
+  top: 82px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  max-width: min(620px, 86vw);
+  pointer-events: none;
+}
+
+.effect-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 4px 9px;
+  border: 1px solid rgba(240, 225, 0, 0.45);
+  border-radius: 6px;
+  background: rgba(10, 10, 20, 0.58);
+  color: #f0e100;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-shadow: 0 0 6px rgba(240, 225, 0, 0.45);
+  box-shadow: 0 0 10px rgba(240, 225, 0, 0.16);
+}
+
 #mode-label {
   margin-right: 8px;
   font-weight: 700;
@@ -454,6 +484,15 @@ html, body {
   .hud-info {
     top: 10px;
     right: 10px;
+  }
+  .effect-strip {
+    top: 64px;
+    max-width: 92vw;
+  }
+  .effect-pill {
+    min-height: 20px;
+    padding: 3px 6px;
+    font-size: 0.58rem;
   }
   .hud-info #mode-label {
     display: none;
