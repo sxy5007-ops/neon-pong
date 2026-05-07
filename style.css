@@ -178,8 +178,117 @@ html, body {
   border-radius: 4px;
 }
 
-.menu-footer {
+.controls-panel {
   margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 0.82rem;
+  color: rgba(200, 200, 220, 0.8);
+  text-shadow: 0 0 6px rgba(0, 255, 255, 0.2);
+}
+
+.controls-reminder {
+  margin-top: 18px;
+}
+
+.control-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: rgba(200, 200, 220, 0.75);
+  text-shadow: 0 0 6px rgba(0, 255, 255, 0.15);
+}
+
+.control-row.small {
+  font-size: 0.72rem;
+}
+
+.control-text {
+  margin-left: 4px;
+  margin-right: 6px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.control-divider {
+  color: rgba(255, 255, 255, 0.2);
+  margin: 0 4px;
+}
+
+.key-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #fff;
+  border: 1px solid currentColor;
+  background: rgba(255, 255, 255, 0.06);
+  text-shadow: 0 0 4px currentColor;
+  box-shadow: 0 0 6px currentColor;
+  letter-spacing: 0.02em;
+}
+
+.key-badge.cyan {
+  color: #00ffff;
+  border-color: #00ffff;
+  box-shadow: 0 0 6px rgba(0, 255, 255, 0.3);
+}
+
+.key-badge.magenta {
+  color: #ff00ff;
+  border-color: #ff00ff;
+  box-shadow: 0 0 6px rgba(255, 0, 255, 0.3);
+}
+
+.key-badge.yellow {
+  color: #f0e100;
+  border-color: #f0e100;
+  box-shadow: 0 0 6px rgba(240, 225, 0, 0.3);
+}
+
+.controls-hint {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 18px;
+  z-index: 8;
+  pointer-events: none;
+  opacity: 0.65;
+  transition: opacity 0.5s ease;
+}
+
+.controls-hint.hidden {
+  opacity: 0;
+}
+
+.hint-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  color: rgba(200, 200, 220, 0.65);
+  text-shadow: 0 0 6px rgba(0, 255, 255, 0.15);
+}
+
+.hint-text {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin-left: 3px;
+}
+
+.menu-footer {
+  margin-top: 20px;
   display: flex;
   justify-content: center;
   gap: 16px;
@@ -299,7 +408,7 @@ html, body {
 
 @media (max-width: 600px) {
   .menu-container {
-    padding: 32px 24px;
+    padding: 32px 20px;
   }
   .neon-btn {
     padding: 12px 18px;
@@ -314,5 +423,22 @@ html, body {
   }
   .hud-info #mode-label {
     display: none;
+  }
+  .controls-hint {
+    bottom: 10px;
+    gap: 12px;
+  }
+  .key-badge {
+    min-width: 22px;
+    height: 18px;
+    padding: 0 4px;
+    font-size: 0.62rem;
+  }
+  .control-row {
+    gap: 4px;
+    font-size: 0.7rem;
+  }
+  .controls-panel {
+    margin-top: 16px;
   }
 }

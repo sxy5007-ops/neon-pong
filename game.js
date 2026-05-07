@@ -35,6 +35,8 @@
     menuBtn: document.getElementById('menu-btn'),
     touchLeft: document.getElementById('touch-left'),
     touchRight: document.getElementById('touch-right'),
+    controlsHint: document.getElementById('controls-hint'),
+    hintP2: document.getElementById('hint-p2'),
   };
 
   /* ============================================================
@@ -251,7 +253,7 @@
       w: PADDLE_WIDTH,
       h,
       vy: 0,
-      speed: 520,
+    speed: 720,
       color: side === 'left' ? COLORS.paddleP1 : COLORS.paddleP2,
       glow: side === 'left' ? '#00ffff' : '#ff00ff',
     };
@@ -645,6 +647,8 @@
     ball = makeBall();
     trails = [];
     particles = [];
+    ui.controlsHint.classList.remove('hidden');
+    ui.hintP2.style.display = mode === 'ai' ? 'none' : 'flex';
     showScreen('hud');
   }
 
@@ -666,6 +670,7 @@
     AudioEngine.stopMusic();
     screens.pause.classList.remove('active');
     screens.gameover.classList.remove('active');
+    ui.controlsHint.classList.add('hidden');
     showScreen('menu');
   }
 

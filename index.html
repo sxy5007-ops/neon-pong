@@ -36,6 +36,24 @@
             <span class="btn-sub">LOCAL</span>
           </button>
         </div>
+        <div class="controls-panel">
+          <div class="control-row">
+            <span class="key-badge cyan">W</span>
+            <span class="key-badge cyan">S</span>
+            <span class="control-text">P1 Move</span>
+            <span class="control-divider">|</span>
+            <span class="key-badge magenta">↑</span>
+            <span class="key-badge magenta">↓</span>
+            <span class="control-text">P2 Move</span>
+          </div>
+          <div class="control-row">
+            <span class="key-badge yellow">P</span>
+            <span class="key-badge yellow">Esc</span>
+            <span class="control-text">Pause</span>
+            <span class="control-divider">|</span>
+            <span class="control-text">Mouse / Touch also works</span>
+          </div>
+        </div>
         <div class="menu-footer">
           <button id="mute-btn" class="icon-btn" title="Toggle Audio">🔊</button>
         </div>
@@ -53,6 +71,18 @@
         <button id="hud-mute-btn" class="icon-btn">🔊</button>
         <button id="pause-btn" class="icon-btn">⏸</button>
       </div>
+      <div id="controls-hint" class="controls-hint">
+        <div class="hint-row">
+          <span class="key-badge cyan">W</span>
+          <span class="key-badge cyan">S</span>
+          <span class="hint-text">P1</span>
+        </div>
+        <div class="hint-row" id="hint-p2">
+          <span class="key-badge magenta">↑</span>
+          <span class="key-badge magenta">↓</span>
+          <span class="hint-text">P2</span>
+        </div>
+      </div>
     </div>
 
     <div id="pause-screen" class="screen">
@@ -61,6 +91,20 @@
         <div class="menu-buttons">
           <button id="resume-btn" class="neon-btn">RESUME</button>
           <button id="quit-btn" class="neon-btn">QUIT TO MENU</button>
+        </div>
+        <div class="controls-reminder">
+          <div class="control-row small">
+            <span class="key-badge cyan">W</span>
+            <span class="key-badge cyan">S</span>
+            <span class="control-text">P1</span>
+            <span class="control-divider">|</span>
+            <span class="key-badge magenta">↑</span>
+            <span class="key-badge magenta">↓</span>
+            <span class="control-text">P2</span>
+            <span class="control-divider">|</span>
+            <span class="key-badge yellow">P</span>
+            <span class="control-text">Pause</span>
+          </div>
         </div>
       </div>
     </div>
