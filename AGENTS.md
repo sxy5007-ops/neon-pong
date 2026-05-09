@@ -4,18 +4,27 @@
 
 ```
 cyberpunk-pong/
-├── index.html          # Game HTML with CRT overlay, menus, HUD, and screens
-├── game.js             # Single-file game engine: physics, audio, rendering, AI (~1230 lines)
-├── style.css           # Cyberpunk neon theme, glassmorphic UI, responsive styles
+├── index.html           # Game HTML with CRT overlay, menus, HUD, and screens
+├── style.css            # Cyberpunk neon theme, glassmorphic UI, responsive styles
+├── main.js              # Entry point: DOM binding, event listeners, initialization
+├── lib/
+│   ├── engine.js        # Core state, constants, save/load, paddle/ball factory functions
+│   ├── audio.js         # Procedural synthwave music + SFX via Web Audio API
+│   ├── powerups.js      # Power-up types, spawning, collection effects, callouts
+│   ├── render.js        # Canvas drawing: grid, paddles, balls, trails, particles, CRT
+│   └── logic.js         # Game loop, AI, input handling, paddle/ball physics, scoring
 ├── tools/
-│   └── smoke-test.js   # Node.js smoke tests for AI difficulty, power-ups, and configuration
+│   └── smoke-test.js    # Node.js smoke tests for AI difficulty, power-ups, and configuration
+├── package.json         # npm scripts (lint, test) and ESLint dev dependency
+├── .eslintrc.json       # ESLint configuration
+├── .eslintignore        # ESLint ignore rules
 ├── .github/
 │   └── workflows/
-│       └── deploy.yml  # GitHub Actions → GitHub Pages deploy on push to main
-└── README.md           # Feature list, controls, setup, and deployment instructions
+│       └── deploy.yml   # GitHub Actions → GitHub Pages deploy on push to main
+└── README.md            # Feature list, controls, setup, and deployment instructions
 ```
 
-All game logic lives in `game.js`. It's an IIFE — no modules, no build step. UI markup is in `index.html`; styles are in `style.css`.
+Game logic is split across five IIFE modules in `lib/`, each extending the global `NP` namespace. `index.html` loads them in dependency order (`engine.js` → `audio.js` → `powerups.js` → `render.js` → `logic.js`), then `main.js` binds DOM events and starts the loop. No build step, no bundler — just vanilla ES6+.
 
 ## Running Locally
 
@@ -40,23 +49,25 @@ Tests verify AI difficulty ordering, power-up system functionality, and configur
 ## Coding Style
 
 - **No framework, no build step** — vanilla HTML5 Canvas, CSS3, and ES6+
-- Single IIFE with `'use strict'` in `game.js`
-- Constants defined at the top (e.g. `WIN_SCORE`, `BALL_RADIUS`, `DIFFICULTY`)
+- Modular IIFE pattern: each `lib/*.js` file wraps in `(function () { 'use strict'; ... })()` and attaches to the global `NP` namespace (`window.NP`)
+- `engine.js` creates the `NP` namespace first; subsequent modules extend it (guarded by `if (!NP) return`)
+- Constants defined in `engine.js` at top (e.g. `WIN_SCORE`, `BALL_RADIUS`, `DIFFICULTY`)
 - Sections separated by block comment headers (e.g. `/* == DOM References == */`)
 - All numeric values configurable as top-level constants — **do not** scatter magic numbers
 - Arrow functions for iteration (`forEach`, `map`); regular `function()` for named exports
 
 ## Architecture Overview
 
-| Layer | What it handles |
-|---|---|
-| `AudioEngine` (IIFE) | Procedural synthwave bassline + arpeggio via Web Audio oscillators; synthesized SFX (hits, scores, wins) |
-| `loop()` | `requestAnimationFrame` driver; delta-time capped at 50 ms |
-| `update*()` | Input → AI → paddle physics → ball physics → power-ups → effects → callouts |
-| `draw*()` | Grid, center line, paddles, balls, trails, power-ups, particles, callouts |
-| `recordGameResult()` | Persist to `localStorage` under key `neon-pong-save-v1`; leaderboard sorted by margin |
+| Layer | File | What it handles |
+|-------|------|-----------------|
+| `NP` namespace (state) | `lib/engine.js` | Constants, game state, save/load (`localStorage`), paddle/ball factory functions, shared utilities (`clamp`, `opponentOf`) |
+| `NP.AudioEngine` | `lib/audio.js` | Procedural synthwave bassline + arpeggio via Web Audio oscillators; synthesized SFX (paddle hits, wall bounces, scores, wins, sonic pulse) |
+| `NP.*` power-up logic | `lib/powerups.js` | Power-up types, timed effects (mega/tiny/turbo/glitch/reverse/freeze/multiball/sound), spawning with warning pulses, ball collection detection, callout system, effect timer decay |
+| `NP.*` rendering | `lib/render.js` | Canvas drawing (grid, center line, paddles, balls, trails, power-ups, warnings, particles, callouts); shake effect, score flash, resize/DPR handling; effect pill UI |
+| `NP.*` game logic | `lib/logic.js` | `requestAnimationFrame` loop (delta-time capped at 50 ms), AI opponent (3 difficulties with projection), input handling (keyboard/mouse/touch), paddle/ball physics, reflection with glitch/turbo, scoring and win detection, screen transitions |
+| `NP.*` entry point | `main.js` | DOM references, event listener wiring, touch zone setup, initialization (`NP.resize()`, `NP.loop()`) |
 
-Power-ups affect paddles (mega/tiny), ball speed (turbo), bounce unpredictability (glitch), direction (reverse), and add extra balls (multiball).
+Power-ups affect paddles (mega/tiny), ball speed (turbo), bounce unpredictability (glitch), direction (reverse), opponent freezing (freeze), and add extra balls (multiball). The sonic pulse (sound) pushes all balls toward the opponent's side with a screen shake and particle burst.
 
 ## Commit Conventions
 
@@ -82,7 +93,4 @@ git push origin main
 
 ## Areas for Improvement
 
-- Split `game.js` into separate modules (engine, audio, power-ups, rendering) for readability and testability
-- Add a `package.json` with linting (e.g. ESLint) and a proper test runner (e.g. Jest)
-- Add a `sound` power-up type (currently referenced in code but never spawned)
 - Replace hardcoded `POWER_UP_WARNING_LIFE` and `CALLOUT_LIFE` with more discoverable constants

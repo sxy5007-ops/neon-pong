@@ -1,0 +1,13 @@
+{
+  "name": "neon-pong",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cyberpunk Pong game",
+  "scripts": {
+    "lint": "eslint lib/ main.js tools/",
+    "test": "node tools/smoke-test.js"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0"
+  }
+}
