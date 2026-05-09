@@ -753,20 +753,24 @@
       return (dx * dx + dy * dy) < (b.r * b.r);
     };
 
-    if (checkPaddle(paddles.p1)) {
+    let hitPaddle = false;
+    if (checkPaddle(paddles.p1) && !hitPaddle) {
       b.x = paddles.p1.x + paddles.p1.w + b.r;
       reflectBallFor(b, paddles.p1);
       AudioEngine.sfxPaddleHit();
       state.shake = 6;
       state.shakeDecay = 0.82;
       spawnParticles(b.x, b.y, 10, COLORS.particle);
-    } else if (checkPaddle(paddles.p2)) {
+      hitPaddle = true;
+    }
+    if (checkPaddle(paddles.p2) && !hitPaddle) {
       b.x = paddles.p2.x - b.r;
       reflectBallFor(b, paddles.p2);
       AudioEngine.sfxPaddleHit();
       state.shake = 6;
       state.shakeDecay = 0.82;
       spawnParticles(b.x, b.y, 10, COLORS.particle);
+      hitPaddle = true;
     }
 
     if (!b.isMain) return;
