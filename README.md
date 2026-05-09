@@ -1,94 +1,40 @@
-# Neon Pong
+# 🌃 Neon Pong (Cyberpunk Edition)
 
-A modernized, cyberpunk-themed Pong game that runs entirely in the browser. Built with vanilla HTML5, CSS3, and JavaScript — no build step, no external assets, no dependencies.
+A browser-based Pong game with a heavy cyberpunk aesthetic, featuring procedural elements like dynamic music, powerup systems, and adaptive AI opponent logic. The current engine is highly modularized into dedicated modules for maximum scalability and testability.
 
-**[Play Now](https://sxy5007-ops.github.io/neon-pong/)**
+## ✨ Key Features Implemented
+*   **Modular Architecture:** Core concerns are separated into distinct IIFE modules (`lib/game_state`, `lib/engine`, etc.).
+*   **Procedural Audio:** The audio system dynamically adjusts music tempo and sound effects based on the active game state (e.g., 'Turbo' increases BPM, 'Slow Field' darkens tones).
+*   **State-Driven Powerups:** Powerup collection applies structured modifiers (`ModifierInstruction[]`) to a global `NP.activeEffects` map in `lib/engine.js`.
+*   **Decay System:** All active effects (e.g., speed boosts, slow fields) now have a visible duration and decay naturally via `Engine.decayEffects(dt)` every frame.
+*   **Advanced AI Logic:** The opponent (`p2`) utilizes predictive movement based on the ball's projected path, factoring in difficulty levels ('easy', 'normal', 'hard').
+*   **Game Flow Management:** A dedicated state manager handles screen transitions (Menu $\rightarrow$ Playing $\rightarrow$ Paused $\rightarrow$ Game Over) and score persistence.
 
-## Features
+## ⚙️ Architecture Overview (The 5 Pillars)
 
-- **Cyberpunk Neon Visuals** — glowing paddles, animated grid, CRT scanlines, particle explosions, screen shake, ball trails
-- **Procedural Synthwave Music** — background music generated in real-time using the Web Audio API (oscillators, filters, arpeggios)
-- **Synthesized SFX** — paddle hits, wall bounces, scores, and win jingles all generated procedurally
-- **Smart AI Opponent** — three difficulty levels (Easy / Normal / Hard) with human-like reaction delay and prediction error
-- **Chaotic Power-Ups** — frequent drifting pickups with warning pulses, collection callouts, paddle buffs, opponent debuffs, freeze, glitch bounces, turbo ball, multiball bursts, and sonic pulse
-- **1P vs AI & 2P Local Modes** — challenge the AI or play head-to-head on the same keyboard / device
-- **Responsive Controls** — keyboard (W/S, Arrow keys), mouse tracking, and touch (mobile-friendly split-screen zones)
-- **Glassmorphic UI** — neon menus, pause overlay, game over screen
-- **Lightweight** — under 50 KB, zero external network requests
+| Module | File | Responsibility | Key API/Function |
+| :--- | :--- | :--- | :--- |
+| **State Manager** | `lib/game_state.js` | Single source of truth for score, match state, and active effects map (`NP.activeEffects`). | `initializeGame()`, `getScores()` |
+| **Engine Core** | `lib/engine.js` | Physics simulation, collision resolution (paddle/wall), powerup detection, global state decay. | `gameLoopUpdate(dt)`, `decayEffects(dt)` |
+| **Content Generator** | `lib/generator.js` | Procedural content generation: determining wave difficulty and spawning random powerups based on progress. | `generateNextWave()` |
+| **Game Logic** | `lib/logic.js` | Input handling (keyboard, touch), AI opponent movement calculations, physics utility wrappers (`getPaddleSpeed`, etc.). | `updateAI(dt)`, `updateInput(dt)` |
+| **Audio/Visuals** | `lib/audio.js` & `lib/render.js` | Responsible for all user feedback. Audio reacts to state changes; Render draws active effects (glow circles, callouts). | `startMusic()`, `drawActiveEffects()` |
 
-## Controls
+## 🕹️ Gameplay Loop (How It Runs)
 
-| Action | Input |
-|---|---|
-| P1 Up | W or Mouse Up |
-| P1 Down | S or Mouse Down |
-| P2 Up | Arrow Up |
-| P2 Down | Arrow Down |
-| Pause / Resume | P or Esc |
-| Mute | Speaker icon (HUD / Menu) |
-| Touch | Drag left/right half of screen |
+The game flow is dictated by the `main.js` orchestrator running the main loop:
 
-## Local Development
+1.  **Initialization:** Game loads and initializes modules.
+2.  **Content Check:** `Generator` determines if a new wave/powerup should be spawned based on wins.
+3.  **State Setup (Pre-Match):** If a powerup is found, its effect function runs to populate the initial state in `NP.activeEffects`.
+4.  **Game Loop Cycle (Every Frame):**
+    a. **Decay:** `Engine.decayEffects(dt)` runs first, reducing all modifier durations and triggering cleanup/audio cues for expired effects.
+    b. **Input & AI:** `logic.js` updates paddle positions based on input and calculated opponent behavior, respecting current state modifiers.
+    c. **Physics:** `engine.js` calculates ball movement, checks collisions, applies physics boosts (Turbo, Mega), and calls audio/particle events upon impact.
+    d. **Render:** `render.js` draws the scene, visualizing all active states (glows, particles).
 
-Simply open `index.html` in any modern browser:
-
-```bash
-open index.html
-```
-
-Or serve it with any static file server:
-
-```bash
-python3 -m http.server 8080
-# open http://localhost:8080
-```
-
-The game is split into modular IIFE files under `lib/` (engine, audio, powerups, render, logic) plus a `main.js` entry point — all loaded via `<script>` tags in `index.html` in dependency order. No build step required.
-
-### npm Scripts
-
-The project includes a `package.json` with linting and test scripts:
-
-```bash
-# Run smoke tests (AI difficulty, power-ups, configuration bounds)
-npm test
-
-# Run ESLint on all source files
-npm run lint
-```
-
-No dependency installation needed for basic use — `npm test` runs the standalone `tools/smoke-test.js`. Install ESLint with `npm install` if you want to use `npm run lint`.
-
-## Deployment
-
-Push to `main` and the included `.github/workflows/deploy.yml` automatically deploys to GitHub Pages:
-
-```bash
-git add .
-git commit -m "Your change"
-git push origin main
-```
-
-Then go to **Settings > Pages** and set the source to "GitHub Actions".
-
-## Tech Stack
-
-- HTML5 Canvas 2D
-- Vanilla JavaScript (ES6+)
-- CSS3 (flexbox, backdrop-filter, animations)
-- Web Audio API (procedural audio synthesis)
-- GitHub Actions (CI/CD to GitHub Pages)
-
-## Performance
-
-- Targets **60 FPS** via `requestAnimationFrame`
-- Delta-time physics for consistent speed across refresh rates
-- Particle cap and efficient trail management
-
-## License
-
-MIT
+## 🛠️ Development & Testing Notes
+*   **Development Best Practice:** Always treat the modules as black boxes connected only by their standardized APIs (`NP.activeEffects`, `NP.gameStateManager`).
+*   **Testing:** The smoke test suite is functional and validates the critical API contracts between the core physics, state decay, and collision detection systems.
 
 ---
-
-Built with neon and caffeine.
