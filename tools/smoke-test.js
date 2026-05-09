@@ -168,12 +168,12 @@ test('power-up API supports chaotic party effects', () => {
   api.startGame('ai', 'easy');
   api.applyPowerUp('p1', 'mega');
   api.applyPowerUp('p1', 'tiny');
-  api.applyPowerUp('p1', 'shield');
+  api.applyPowerUp('p1', 'freeze');
   api.applyPowerUp('p1', 'multiball');
 
   assert(api.activeEffects.p1.mega > 0, 'mega paddle effect should be active for P1');
   assert(api.activeEffects.p2.tiny > 0, 'tiny trouble should target P2');
-  assert(api.activeEffects.p1.shield > 0, 'score shield should be active for P1');
+  assert(api.activeEffects.p2.freeze > 0, 'freeze should target P2');
   assert(api.balls.length > 1, 'multiball should add extra live balls');
 });
 
