@@ -49,6 +49,7 @@ function makeCanvasContext() {
   return {
     setTransform() {},
     clearRect() {},
+    fillRect() {},
     save() {},
     restore() {},
     translate() {},
