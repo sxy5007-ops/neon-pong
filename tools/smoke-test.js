@@ -3,9 +3,12 @@ const path = require('path');
 
 const libDir = path.join(__dirname, '..', 'lib');
 const files = [
+  'config.js',
+  'state.js',
   'engine.js',
   'audio.js',
   'powerups.js',
+  'powerup.js',
   'render.js',
   'logic.js',
 ];
@@ -116,6 +119,7 @@ function setupGame() {
     getElementById: (id) => elements[id],
     querySelectorAll: () => [],
     createElement: (tag) => makeElement(tag),
+    addEventListener: () => {},
   };
   global.window = {
     innerWidth: 1000,
@@ -128,7 +132,37 @@ function setupGame() {
   global.requestAnimationFrame = () => 1;
 
   eval(source);
-  return { api: window.NP, elements };
+
+  // Wire up NP.ui elements that the game code expects (mirrors main.js init)
+  const { window: win } = global;
+  const ui = win.NP.ui;
+  console.log('[debug] NP.ui after eval:', Object.keys(ui || {}).length, 'keys');
+  if (ui) {
+    ui.scoreP1 = elements['score-p1'];
+    ui.scoreP2 = elements['score-p2'];
+    ui.effectStrip = elements['effect-strip'];
+    ui.modeLabel = elements['mode-label'];
+    ui.winnerText = elements['winner-text'];
+    ui.finalP1 = elements['final-p1'];
+    ui.finalP2 = elements['final-p2'];
+    ui.controlsHint = elements['controls-hint'];
+    ui.hintP2 = elements['hint-p2'];
+    console.log('[debug] NP.ui after wiring:', Object.keys(ui).length, 'keys:', Object.keys(ui));
+  }
+
+  // Wire up NP.screens that the game code expects
+  const screens = win.NP.screens;
+  if (screens) {
+    screens.menu = elements['menu-screen'];
+    screens.hud = elements['hud'];
+    screens.pause = elements['pause-screen'];
+    screens.gameover = elements['gameover-screen'];
+  }
+
+  // Initialize state dimensions (resize reads from window mock: 1000x600)
+  win.NP.resize();
+
+  return { api: win.NP, elements };
 }
 
 function assert(condition, message) {
