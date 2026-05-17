@@ -19,6 +19,10 @@
       <div class="menu-container glass">
         <h1 class="neon-title">NEON PONG</h1>
         <div class="menu-buttons">
+          <button class="neon-btn" data-mode="campaign">
+            <span class="btn-label">CAMPAIGN</span>
+            <span class="btn-sub">8 LEVELS</span>
+          </button>
           <button class="neon-btn" data-mode="ai" data-difficulty="easy">
             <span class="btn-label">1 PLAYER</span>
             <span class="btn-sub">EASY</span>
@@ -63,6 +67,22 @@
         <div class="menu-footer">
           <button id="settings-btn" class="icon-btn" title="Settings">⚙</button>
           <button id="mute-btn" class="icon-btn" title="Toggle Audio">🔊</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="campaign-screen" class="screen">
+      <div class="menu-container glass">
+        <h2 class="neon-title small">CAMPAIGN</h2>
+        <div id="campaign-level-grid" class="campaign-grid"></div>
+        <div id="campaign-info" class="campaign-info">
+          <div class="campaign-level-title" id="campaign-level-title">Select a level</div>
+          <div class="campaign-level-desc" id="campaign-level-desc"></div>
+          <div class="campaign-level-detail" id="campaign-level-detail"></div>
+          <button id="campaign-start-btn" class="neon-btn" disabled>SELECT A LEVEL</button>
+        </div>
+        <div class="menu-buttons">
+          <button id="campaign-back-btn" class="neon-btn">BACK</button>
         </div>
       </div>
     </div>
@@ -120,6 +140,9 @@
     <div id="gameover-screen" class="screen">
       <div class="menu-container glass">
         <h2 class="neon-title small" id="winner-text">PLAYER 1 WINS</h2>
+        <div id="campaign-complete-badge" class="campaign-complete-badge" style="display:none">
+          <span class="badge-text">ALL LEVELS COMPLETE</span>
+        </div>
         <div class="final-score">
           <span id="final-p1">0</span> — <span id="final-p2">0</span>
         </div>
@@ -136,6 +159,7 @@
           </ol>
         </div>
         <div class="menu-buttons">
+          <button id="next-level-btn" class="neon-btn" style="display:none">NEXT LEVEL</button>
           <button id="restart-btn" class="neon-btn">PLAY AGAIN</button>
           <button id="menu-btn" class="neon-btn">MAIN MENU</button>
         </div>

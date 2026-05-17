@@ -78,7 +78,8 @@ document.addEventListener('DOMContentLoaded', function() {
     hud: document.getElementById('hud'),
     pause: document.getElementById('pause-screen'),
     gameover: document.getElementById('gameover-screen'),
-    settings: document.getElementById('settings-screen')
+    settings: document.getElementById('settings-screen'),
+    campaign: document.getElementById('campaign-screen')
   };
 
   // Verify screen elements are found
@@ -159,18 +160,27 @@ document.addEventListener('DOMContentLoaded', function() {
         let difficulty = this.getAttribute('data-difficulty');
         // For AI modes, difficulty is required; for 2P, it's not used
         if (mode === 'ai' && !difficulty) difficulty = 'normal';
-        
+
         console.log('Starting game:', {mode, difficulty});
-        
-        // Start the game using the modular API
-        NP.startGame(mode, difficulty);
-        
-        // Start the animation loop
-        if (typeof NP.loop === 'function' && NP.state.screen === 'playing') {
-          console.log('Starting animation loop');
-          NP.loop(performance.now());
+
+        if (mode === 'campaign') {
+          // Campaign mode: show campaign screen instead of starting game
+          NP.showCampaignScreen();
+          if (typeof NP.loop === 'function') {
+            console.log('Starting animation loop');
+            NP.loop(performance.now());
+          }
         } else {
-          console.error('Cannot start loop: NP.loop not available or not in playing state');
+          // Start the game using the modular API
+          NP.startGame(mode, difficulty);
+
+          // Start the animation loop
+          if (typeof NP.loop === 'function' && NP.state.screen === 'playing') {
+            console.log('Starting animation loop');
+            NP.loop(performance.now());
+          } else {
+            console.error('Cannot start loop: NP.loop not available or not in playing state');
+          }
         }
       } catch (error) {
         console.error('Error starting game:', error);
@@ -214,6 +224,32 @@ document.addEventListener('DOMContentLoaded', function() {
     settingsBackBtn.addEventListener('click', function() {
       console.log('Settings back button clicked');
       NP.screens.settings.classList.remove('active');
+      NP.screens.menu.classList.add('active');
+      NP.state.screen = 'menu';
+    });
+  }
+
+  // Campaign start button
+  const campaignStartBtn = document.getElementById('campaign-start-btn');
+  if (campaignStartBtn) {
+    campaignStartBtn.addEventListener('click', function() {
+      console.log('Campaign start button clicked');
+      if (NP.selectedCampaignLevel >= 0) {
+        NP.startCampaignLevel(NP.selectedCampaignLevel);
+        if (typeof NP.loop === 'function' && NP.state.screen === 'playing') {
+          console.log('Starting animation loop');
+          NP.loop(performance.now());
+        }
+      }
+    });
+  }
+
+  // Campaign back button
+  const campaignBackBtn = document.getElementById('campaign-back-btn');
+  if (campaignBackBtn) {
+    campaignBackBtn.addEventListener('click', function() {
+      console.log('Campaign back button clicked');
+      NP.screens.campaign.classList.remove('active');
       NP.screens.menu.classList.add('active');
       NP.state.screen = 'menu';
     });
@@ -305,22 +341,49 @@ document.addEventListener('DOMContentLoaded', function() {
   // Game over screen buttons
   const restartBtn = document.getElementById('restart-btn');
   const menuBtn = document.getElementById('menu-btn');
+  const nextLevelBtn = document.getElementById('next-level-btn');
   if (restartBtn) {
     restartBtn.addEventListener('click', function() {
       console.log('Restart button clicked');
       // Restart the game with the same mode and difficulty
-      if (NP.state.mode && NP.state.difficulty) {
+      if (NP.state.mode === 'campaign' && NP.campaignLevel != null) {
+        // Restart same campaign level
+        NP.startCampaignLevel(NP.campaignLevel);
+      } else if (NP.state.mode && NP.state.difficulty) {
         NP.startGame(NP.state.mode, NP.state.difficulty);
       } else {
         // Default to AI normal if state not available
         NP.startGame('ai', 'normal');
+      }
+      if (typeof NP.loop === 'function' && NP.state.screen === 'playing') {
+        console.log('Starting animation loop');
+        NP.loop(performance.now());
       }
     });
   }
   if (menuBtn) {
     menuBtn.addEventListener('click', function() {
       console.log('Main menu button clicked');
-      NP.quitToMenu();
+      if (NP.state.mode === 'campaign') {
+        NP.quitToCampaign();
+      } else {
+        NP.quitToMenu();
+      }
+    });
+  }
+  if (nextLevelBtn) {
+    nextLevelBtn.addEventListener('click', function() {
+      console.log('Next level button clicked');
+      if (NP.campaignLevel != null) {
+        var nextIdx = NP.campaignLevel + 1;
+        if (nextIdx < NP.config.CAMPAIGN_LEVELS.length) {
+          NP.startCampaignLevel(nextIdx);
+          if (typeof NP.loop === 'function' && NP.state.screen === 'playing') {
+            console.log('Starting animation loop');
+            NP.loop(performance.now());
+          }
+        }
+      }
     });
   }
 
