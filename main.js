@@ -53,7 +53,11 @@ document.addEventListener('DOMContentLoaded', function() {
     saveStats: document.getElementById('save-stats'),
     leaderboardList: document.getElementById('leaderboard-list'),
     gameoverSaveStats: document.getElementById('gameover-save-stats'),
-    gameoverLeaderboard: document.getElementById('gameover-leaderboard')
+    gameoverLeaderboard: document.getElementById('gameover-leaderboard'),
+    statRally: document.getElementById('stat-rally'),
+    statSpeed: document.getElementById('stat-speed'),
+    statPowerups: document.getElementById('stat-powerups'),
+    statDuration: document.getElementById('stat-duration'),
   };
   
   // Verify UI elements are found
