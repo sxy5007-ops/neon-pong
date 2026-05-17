@@ -515,3 +515,121 @@ html, body {
     margin-top: 16px;
   }
 }
+
+/* == Settings Screen == */
+.settings-container {
+  padding: 36px 40px;
+  max-width: 460px;
+}
+
+.settings-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.setting-label {
+  flex: 0 0 110px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #00ffff;
+  text-shadow: 0 0 6px rgba(0, 255, 255, 0.3);
+  letter-spacing: 0.06em;
+  text-align: right;
+}
+
+.setting-value {
+  flex: 0 0 42px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.75);
+  text-align: right;
+  letter-spacing: 0.04em;
+}
+
+.neon-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1;
+  height: 6px;
+  background: linear-gradient(90deg, #00ffff, #ff00ff);
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+}
+
+.neon-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #00ffff;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.6);
+  cursor: pointer;
+}
+
+.neon-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #00ffff;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.6);
+  cursor: pointer;
+}
+
+.toggle-btn {
+  flex: 0 0 70px;
+  padding: 8px 14px;
+  border: 2px solid #ff00ff;
+  border-radius: 6px;
+  background: transparent;
+  color: #ff00ff;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  text-shadow: 0 0 6px rgba(255, 0, 255, 0.5);
+  box-shadow: 0 0 8px rgba(255, 0, 255, 0.2);
+  transition: all 0.2s ease;
+}
+
+.toggle-btn:hover {
+  background: rgba(255, 0, 255, 0.1);
+  transform: scale(1.04);
+}
+
+.toggle-btn.on {
+  border-color: #00ff00;
+  color: #00ff00;
+  text-shadow: 0 0 6px rgba(0, 255, 0, 0.5);
+  box-shadow: 0 0 8px rgba(0, 255, 0, 0.3);
+}
+
+.toggle-btn.on:hover {
+  background: rgba(0, 255, 0, 0.1);
+}
+
+@media (max-width: 600px) {
+  .settings-container {
+    padding: 28px 18px;
+  }
+  .setting-label {
+    flex: 0 0 80px;
+    font-size: 0.75rem;
+  }
+  .setting-value {
+    flex: 0 0 36px;
+    font-size: 0.72rem;
+  }
+}

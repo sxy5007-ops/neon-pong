@@ -49,7 +49,11 @@ document.addEventListener('DOMContentLoaded', function() {
     finalP1: document.getElementById('final-p1'),
     finalP2: document.getElementById('final-p2'),
     controlsHint: document.getElementById('controls-hint'),
-    hintP2: document.getElementById('hint-p2')
+    hintP2: document.getElementById('hint-p2'),
+    saveStats: document.getElementById('save-stats'),
+    leaderboardList: document.getElementById('leaderboard-list'),
+    gameoverSaveStats: document.getElementById('gameover-save-stats'),
+    gameoverLeaderboard: document.getElementById('gameover-leaderboard')
   };
   
   // Verify UI elements are found
@@ -69,7 +73,8 @@ document.addEventListener('DOMContentLoaded', function() {
     menu: document.getElementById('menu-screen'),
     hud: document.getElementById('hud'),
     pause: document.getElementById('pause-screen'),
-    gameover: document.getElementById('gameover-screen')
+    gameover: document.getElementById('gameover-screen'),
+    settings: document.getElementById('settings-screen')
   };
 
   // Verify screen elements are found
@@ -188,6 +193,82 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+  // Settings button in menu
+  const settingsBtn = document.getElementById('settings-btn');
+  if (settingsBtn) {
+    settingsBtn.addEventListener('click', function() {
+      console.log('Settings button clicked');
+      NP.screens.menu.classList.remove('active');
+      NP.screens.settings.classList.add('active');
+      NP.state.screen = 'settings';
+    });
+  }
+
+  // Settings back button
+  const settingsBackBtn = document.getElementById('settings-back-btn');
+  if (settingsBackBtn) {
+    settingsBackBtn.addEventListener('click', function() {
+      console.log('Settings back button clicked');
+      NP.screens.settings.classList.remove('active');
+      NP.screens.menu.classList.add('active');
+      NP.state.screen = 'menu';
+    });
+  }
+
+  // Volume sliders
+  const musicSlider = document.getElementById('music-volume');
+  const sfxSlider = document.getElementById('sfx-volume');
+  const musicLabel = document.getElementById('music-volume-label');
+  const sfxLabel = document.getElementById('sfx-volume-label');
+
+  function updateSlider(slider, label, setter) {
+    slider.addEventListener('input', function() {
+      const v = parseFloat(this.value);
+      label.textContent = Math.round(v * 100) + '%';
+      setter(v);
+      NP.settings[setter === NP.AudioEngine.setMusicVolume ? 'musicVolume' : 'sfxVolume'] = v;
+      NP.saveSettings();
+    });
+  }
+
+  if (musicSlider && musicLabel) {
+    musicSlider.value = NP.settings.musicVolume;
+    musicLabel.textContent = Math.round(NP.settings.musicVolume * 100) + '%';
+    updateSlider(musicSlider, musicLabel, function(v) { NP.AudioEngine.setMusicVolume(v); });
+  }
+  if (sfxSlider && sfxLabel) {
+    sfxSlider.value = NP.settings.sfxVolume;
+    sfxLabel.textContent = Math.round(NP.settings.sfxVolume * 100) + '%';
+    updateSlider(sfxSlider, sfxLabel, function(v) { NP.AudioEngine.setSfxVolume(v); });
+  }
+
+  // Toggle buttons
+  function setupToggle(id, getter, setter, labelKey) {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    function updateBtn() {
+      const on = getter();
+      btn.textContent = on ? 'ON' : 'OFF';
+      btn.className = 'toggle-btn' + (on ? ' on' : '');
+    }
+    btn.addEventListener('click', function() {
+      setter();
+      updateBtn();
+    });
+    updateBtn();
+  }
+
+  setupToggle('crt-toggle',
+    function() { return NP.settings.crtEnabled; },
+    function() { NP.toggleCRT(); },
+    'crtEnabled'
+  );
+  setupToggle('particles-toggle',
+    function() { return NP.settings.particlesEnabled; },
+    function() { NP.toggleParticles(); },
+    'particlesEnabled'
+  );
+
   // Pause button in HUD
   const pauseBtn = document.getElementById('pause-btn');
   if (pauseBtn) {
@@ -240,4 +321,5 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   console.log('Game initialization complete');
+  NP.applySettings();
 });

@@ -9,13 +9,61 @@
 
   /* == Config constants loaded from lib/config.js (backward compat NP.* assignments) == */
   var SAVE_KEY = 'neon-pong-save-v1';
-  var SETTINGS_KEY = 'neon-pong-settings-v1';
   var DEFAULT_SAVE = {
     gamesPlayed: 0, p1Wins: 0, aiWins: 0, p2Wins: 0, leaderboard: [],
   };
 
+  function makePaddle(side) {
+    var s = NP.scale;
+    const h = Math.max(60 * s, NP.state.height * NP.config.PADDLE_HEIGHT_RATIO);
+    return {
+        side, // 'left' | 'right'
+        x: side === 'left' ? NP.config.PADDLE_WIDTH * 2 * s : NP.state.width - NP.config.PADDLE_WIDTH * 3 * s,
+        y: NP.state.height / 2 - h / 2,
+        w: Math.round(NP.config.PADDLE_WIDTH * s),
+        h,
+        vy: 0,
+        speed: Math.round(720 * s),
+        color: side === 'left' ? NP.COLORS.paddleP1 : NP.COLORS.paddleP2,
+        glow: side === 'left' ? '#00ffff' : '#ff00ff',
+    };
+}
 
+function makeBall() {
+    var s = NP.scale;
+    const dir = Math.random() > 0.5 ? 1 : -1;
+    const angle = (Math.random() - 0.5) * (Math.PI / 3);
+    return {
+        x: NP.state.width / 2,
+        y: NP.state.height / 2,
+        r: Math.round(NP.config.BALL_RADIUS * s),
+        vx: Math.cos(angle) * NP.config.INITIAL_SPEED * s * dir,
+        vy: Math.sin(angle) * NP.config.INITIAL_SPEED * s,
+        speed: NP.config.INITIAL_SPEED * s,
+        baseSpeed: NP.config.INITIAL_SPEED * s,
+        hits: 0,
+        isMain: true,
+        life: Infinity,
+    };
+}
 
+function makeExtraBall(source, angleOffset) {
+    var s = NP.scale;
+    const speed = Math.max(NP.config.INITIAL_SPEED * s * 0.82, source.speed * 0.78);
+    const angle = Math.atan2(source.vy, source.vx) + angleOffset;
+    return {
+        x: source.x,
+        y: source.y,
+        r: Math.round(NP.config.BALL_RADIUS * s),
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        speed,
+        baseSpeed: speed,
+        hits: 0,
+        isMain: false,
+        life: 8,
+    };
+}
 
   /* == Scale == */
   NP.scale = 1;
@@ -53,39 +101,7 @@
   NP.powerUps = [];
   NP.powerUpWarnings = [];
   NP.bumpers = [];
-  NP.decoys = [];
   NP.callouts = [];
-  NP.tornado = {
-    active: false, x: 0, y: 0, life: 0,
-    spawnTimer: 10 + Math.random() * 10,
-    spin: 0,
-  };
-  NP.disco = {
-    active: false, life: 0, cooldown: 0,
-    hue: 0, beatPhase: 0,
-  };
-  NP.kaiju = {
-    active: false, timer: 0,
-    cooldown: NP.config.KAIJU_COOLDOWN_MIN + Math.random() * (NP.config.KAIJU_COOLDOWN_MAX - NP.config.KAIJU_COOLDOWN_MIN),
-    pattern: 'slam', patternTimer: 0,
-    armX: 0, armY: 0, armTargetX: 0, armTargetY: 0,
-    armPhase: 0, shockwaveActive: false,
-    shockwaveTimer: 0, shockwaveRadius: 0,
-    warningTimer: 0,
-  };
-  NP.storm = {
-    active: false, timer: 0,
-    cooldown: NP.config.STORM_COOLDOWN_MIN + Math.random() * (NP.config.STORM_COOLDOWN_MAX - NP.config.STORM_COOLDOWN_MIN),
-    strikeTimer: 0, bolts: [], warningTimer: 0, warningBolts: [],
-  };
-  NP.timePocket = {
-    active: false, timer: 0,
-    cooldown: NP.config.POCKET_COOLDOWN_MIN + Math.random() * (NP.config.POCKET_COOLDOWN_MAX - NP.config.POCKET_COOLDOWN_MIN),
-    x: 0, y: 0, vx: 0, vy: 0,
-  };
-  NP.voidHole = null;
-  NP.paddleHitBursts = [];
-  NP.nearMisses = [];
   NP.activeEffects = { p1: {}, p2: {}, global: {} };
   NP.lastHitBy = 'p1';
   NP.powerUpTimer = 8;
@@ -158,57 +174,16 @@
     updateSaveUI(NP.ui);
   }
 
-  /* == Settings Save / Load == */
-
-  function loadSettings() {
-    var defaults = NP.config.DEFAULT_SETTINGS;
-    try {
-      var raw = localStorage.getItem(SETTINGS_KEY);
-      if (!raw) return { ...defaults };
-      var parsed = JSON.parse(raw);
-      return { ...defaults, ...parsed };
-    } catch { return { ...defaults }; }
-  }
-
-  function saveSettings() {
-    try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(NP.settings)); } catch {}
-  }
-
-  function applySettings() {
-    // Sync CRT overlay visibility
-    var crt = document.getElementById('crt-overlay');
-    if (crt) crt.style.display = NP.settings.crtEnabled ? '' : 'none';
-    // Sync audio volume (if engine initialized)
-    if (NP.AudioEngine.setMusicVolume) NP.AudioEngine.setMusicVolume(NP.settings.musicVolume);
-    if (NP.AudioEngine.setSfxVolume) NP.AudioEngine.setSfxVolume(NP.settings.sfxVolume);
-  }
-
-  function toggleCRT() {
-    NP.settings.crtEnabled = !NP.settings.crtEnabled;
-    applySettings();
-    saveSettings();
-  }
-
-  function toggleParticles() {
-    NP.settings.particlesEnabled = !NP.settings.particlesEnabled;
-    saveSettings();
-  }
-
-  // Load settings on boot
-  NP.settings = loadSettings();
-
   NP.clamp = function (val, lo, hi) { return Math.max(lo, Math.min(hi, val)); };
   NP.loadSave = loadSave;
   NP.saveGameData = saveGameData;
-  NP.loadSettings = loadSettings;
-  NP.saveSettings = saveSettings;
-  NP.applySettings = applySettings;
-  NP.toggleCRT = toggleCRT;
-  NP.toggleParticles = toggleParticles;
   NP.formatMode = formatMode;
   NP.renderLeaderboard = renderLeaderboard;
   NP.updateSaveUI = updateSaveUI;
   NP.recordGameResult = recordGameResult;
+  NP.makePaddle = makePaddle;
+  NP.makeBall = makeBall;
+  NP.makeExtraBall = makeExtraBall;
   NP.generateBumpers = generateBumpers;
   NP.opponentOf = function (owner) { return owner === 'p1' ? 'p2' : 'p1'; };
 
